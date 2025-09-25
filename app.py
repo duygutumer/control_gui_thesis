@@ -1,10 +1,21 @@
+import os
 from flask import Flask, redirect, request, render_template
 import subprocess
 import re
+from dotenv import dotenv_values  
 
 CONFIG_PATH = "../my_codeless-main/config.py"
+PROJECT_CWD = "../my_codeless-main"
+PROJECT_ENV_PATH = os.path.join(PROJECT_CWD, ".env")
 
 app = Flask(__name__)
+
+def build_child_env(): # to get he env values from the main project
+    env = os.environ.copy()
+    # Load the project's .env and overlay
+    if os.path.exists(PROJECT_ENV_PATH):
+        env.update(dotenv_values(PROJECT_ENV_PATH))
+    return env
 
 def update_config_variable(key, value):
     with open(CONFIG_PATH, "r") as f:
@@ -33,7 +44,7 @@ def index():
     if request.method == "POST":
         command = request.form.get("command")
         try:
-            result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, text=True)
+            result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, text=True, env=build_child_env())
         except subprocess.CalledProcessError as e:
             result = f"Error:\n{e.output}"
     return render_template("index.html", result=result)
@@ -56,6 +67,7 @@ def run_command():
     command_map = {
         "install_requirements": ["pip", "install", "-r", "../my_codeless-main/requirements.txt"],
         "run_project": ["python", "../my_codeless-main/run.py"],
+        "generate_routes":["python", "../my_codeless-main/generate_routes.py"],
         "run_script": ["python", "../my_codeless-main/script.py"],
         "create_db": ["python", "../my_codeless-main/database.py"],
         "insert_mock_data": ["python", "../my_codeless-main/mock_data.py"],
@@ -68,10 +80,10 @@ def run_command():
 
     try:
         if command == "run_project":
-            subprocess.Popen(command_map[command], cwd="../my_codeless-main")
+            subprocess.Popen(command_map[command], cwd="../my_codeless-main", env=build_child_env())
             return f"<pre>Started {command} in background.</pre>"
 
-        output = subprocess.check_output(command_map[command], stderr=subprocess.STDOUT, text=True, cwd="../my_codeless-main")
+        output = subprocess.check_output(command_map[command], stderr=subprocess.STDOUT, text=True, cwd="../my_codeless-main", env=build_child_env())
         return f"<pre>{output}</pre>"
 
     except subprocess.CalledProcessError as e:
