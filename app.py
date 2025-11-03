@@ -18,15 +18,19 @@ def build_child_env(): # to get he env values from the main project
     return env
 
 def update_config_variable(key, value):
-    with open(CONFIG_PATH, "r") as f:
+    pat = re.compile(rf"^(\s*{re.escape(key)}\s*=\s*)(['\"])(.*?)(\2)\s*(#.*)?$")
+
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    new_lines = []
-    updated = False
-
+    new_lines, updated = [], False
     for line in lines:
-        if re.match(rf"\s*{key}\s*=", line):
-            new_lines.append(f'{key} = "{value}"\n')
+        m = pat.match(line)
+        if m:
+            prefix, quote, _, _quote2, comment = m.groups()
+            safe_val = value.replace("\\", "\\\\").replace(quote, f"\\{quote}")
+            new_line = f'{prefix}{quote}{safe_val}{quote}{("" if not comment else " " + comment)}\n'
+            new_lines.append(new_line)
             updated = True
         else:
             new_lines.append(line)
@@ -34,8 +38,11 @@ def update_config_variable(key, value):
     if not updated:
         new_lines.append(f'{key} = "{value}"\n')
 
-    with open(CONFIG_PATH, "w") as f:
+    # atomic write
+    tmp_path = CONFIG_PATH + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
+    os.replace(tmp_path, CONFIG_PATH)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -60,6 +67,13 @@ def update_theme():
     return redirect("/")
 
 
+@app.route("/update-news", methods=["POST"])
+def update_news():
+    if "NEWS_QUERY" in request.form:
+            update_config_variable("NEWS_QUERY" , request.form["NEWS_QUERY"])
+    return redirect("/")
+
+
 @app.route("/run-command", methods=["POST"])
 def run_command():
     command = request.form.get("command")
@@ -72,7 +86,8 @@ def run_command():
         "create_db": ["python", "../my_codeless-main/database.py"],
         "insert_mock_data": ["python", "../my_codeless-main/mock_data.py"],
         "get_news":["python", "../my_codeless-main/news_script.py"],
-        "shutdown": ["pkill", "-f", "run.py"]
+        "shutdown": ["pkill", "-f", "run.py"],
+        "decoy":["python", "../my_codeless-main/decoy_script.py"],
     }
 
     if command not in command_map:

@@ -35,6 +35,7 @@
     <div class="container">
       <h1 class="mb-4">🛠️ Control GUI</h1>
 
+      <!-- COMMAND SECTION -->
       <div class="section">
         <form action="/run-command" method="post">
           <div class="mb-3">
@@ -111,6 +112,19 @@
 
           <div class="mb-3">
             <button
+              class="btn btn-secondary w-100"
+              name="command"
+              value="decoy"
+            >
+              📰 Decoy Login
+            </button>
+            <small class="text-muted"
+              >Decoy Login for Brands (decoy_script.py)</small
+            >
+          </div>
+
+          <div class="mb-3">
+            <button
               class="btn btn-success w-100"
               name="command"
               value="run_project"
@@ -137,6 +151,7 @@
         </form>
       </div>
 
+      <!-- THEME SECTION -->
       <div class="section">
         <form method="POST" action="/update-theme">
           <h3 class="mb-4">🎨 Update Theme</h3>
@@ -205,6 +220,30 @@
 
           <button type="submit" class="btn btn-primary w-100">
             💾 Save Theme
+          </button>
+        </form>
+      </div>
+
+      <!-- 📰 NEWS QUERY SECTION -->
+      <div class="section">
+        <form method="POST" action="/update-news">
+          <h3 class="mb-4">🗞️ Update News Query</h3>
+
+          <div class="mb-3">
+            <label class="form-label">NewsAPI Query</label>
+            <textarea
+              name="NEWS_QUERY"
+              class="form-control"
+              rows="5"
+              placeholder="Example: (Ukraine OR Russian) AND (Conflict OR Energy)"
+            ></textarea>
+            <small class="text-muted">
+              Customize which topics to fetch from NewsAPI.
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-success w-100">
+            💾 Save News Query
           </button>
         </form>
       </div>
