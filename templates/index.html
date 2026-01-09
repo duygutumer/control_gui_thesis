@@ -434,12 +434,12 @@
         </form>
       </section>
 
-      <!-- News Query -->
+      <!-- News Query (UPDATED) -->
       <section id="news" class="glass p-4">
         <div class="section-title mb-3">
           <i class="bi bi-newspaper text-success"></i>
-          <h2 class="h5 mb-0">News Query</h2>
-          <span class="label">LLM War News</span>
+          <h2 class="h5 mb-0">News Settings</h2>
+          <span class="label">War / Bait</span>
         </div>
 
         <form method="POST" action="/update-news">
@@ -451,46 +451,81 @@
               class="form-control"
               rows="5"
               placeholder="(Ukraine OR Kyiv) AND (Russia OR Kremlin)"
-            ></textarea>
+            >{{ NEWS_QUERY or '' }}</textarea>
             <small class="text-secondary"
-              >Used by <span class="kbd">news_script.py</span> to fetch
-              topics.</small
+              >Written into <span class="kbd">config.py</span> and used by
+              <span class="kbd">news_script.py</span>.</small
             >
           </div>
 
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              onclick="preset('(Ukraine OR Kyiv) AND (Russia OR Kremlin)')"
-            >
-              War
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              onclick="preset('(AI OR Artificial Intelligence) AND (Policy OR Safety)')"
-            >
-              AI Policy
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              onclick="preset('(Inflation OR CPI) AND (Central Bank OR Interest Rates)')"
-            >
-              Economy
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              onclick="preset('(Cybersecurity OR Ransomware) AND (Critical Infrastructure OR Banking)')"
-            >
-              Cyber
-            </button>
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Bait Topic</label>
+              <input
+                type="text"
+                class="form-control"
+                name="BAIT_TOPIC"
+                id="baitTopic"
+                placeholder="russia ukraine war"
+                value="{{ BAIT_TOPIC or '' }}"
+              />
+              <small class="text-secondary"
+                >High-level bait theme for LLM-generated content.</small
+              >
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Site Name</label>
+              <input
+                type="text"
+                class="form-control"
+                name="SITE_NAME"
+                id="siteName"
+                placeholder="Your News Portal"
+                value="{{ SITE_NAME or '' }}"
+              />
+              <small class="text-secondary"
+                >Brand name shown on the generated news site.</small
+              >
+            </div>
+          </div>
+
+          <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          onclick='preset("(Ukraine OR Ukrainian OR \"Kyiv\" OR \"Kiev\" OR \"Kharkiv\" OR \"Donbas\" OR \"Donetsk\" OR \"Luhansk\") AND (Russia OR Russian OR \"Moscow\" OR \"Kremlin\" OR \"Putin\") OR (\"Russia-Ukraine\" OR \"Russo-Ukrainian\")", "russia ukraine war", "War Desk Daily")'
+        >
+          War
+        </button>
+        
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          onclick='preset("(Cybersecurity OR Ransomware OR Malware) AND (Banking OR Critical Infrastructure OR Government)", "cybersecurity incidents", "Cyber Pulse")'
+        >
+          Cyber
+        </button>
+        
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          onclick='preset("(Inflation OR CPI) AND (Central Bank OR Interest Rates OR Monetary Policy)", "economy & markets", "Market Brief")'
+        >
+          Economy
+        </button>
+        
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          onclick='preset("(AI OR \"Artificial Intelligence\" OR LLM) AND (Safety OR Regulation OR Policy)", "ai policy", "AI Monitor")'
+        >
+          AI Policy
+        </button>
+        
           </div>
 
           <button type="submit" class="btn btn-success">
-            <i class="bi bi-save"></i> Save News Query
+            <i class="bi bi-save"></i> Save News Settings
           </button>
         </form>
       </section>
@@ -765,10 +800,10 @@
             <span class="kbd">config.py</span> and affects next generation.
           </li>
           <li>
-            <strong>News Query</strong> updates
-            <span class="kbd">NEWS_QUERY</span> in
-            <span class="kbd">config.py</span> for
-            <span class="kbd">news_script.py</span>.
+            <strong>News Settings</strong> updates
+            <span class="kbd">NEWS_QUERY</span>, <span class="kbd">BAIT_TOPIC</span>,
+            and <span class="kbd">SITE_NAME</span> in
+            <span class="kbd">config.py</span> for the other project.
           </li>
           <li>
             <strong>Brands</strong> updates
@@ -818,9 +853,16 @@
       bg.addEventListener("input", repaint);
       repaint();
 
-      // Presets for News Query
-      function preset(text) {
-        document.getElementById("newsQuery").value = text;
+      // Presets for News Settings (UPDATED)
+      function preset(queryText, baitTopic, siteName) {
+        const q = document.getElementById("newsQuery");
+        const b = document.getElementById("baitTopic");
+        const s = document.getElementById("siteName");
+
+        if (q && typeof queryText === "string") q.value = queryText;
+        if (b && typeof baitTopic === "string") b.value = baitTopic;
+        if (s && typeof siteName === "string") s.value = siteName;
+
         showToast("Preset applied.");
       }
 

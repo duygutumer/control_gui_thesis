@@ -31,21 +31,24 @@ def update_config_variable(key, value):
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
+    literal = json.dumps(value, ensure_ascii=False)
+
     new_lines = []
     updated = False
 
     for line in lines:
         if re.match(rf"\s*{re.escape(key)}\s*=", line):
-            new_lines.append(f'{key} = "{value}"\n')
+            new_lines.append(f"{key} = {literal}\n")
             updated = True
         else:
             new_lines.append(line)
 
     if not updated:
-        new_lines.append(f'{key} = "{value}"\n')
+        new_lines.append(f"{key} = {literal}\n")
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
+
 
 
 # ---------- brands_out.json helpers ----------
@@ -108,13 +111,6 @@ def update_theme():
     flash("Theme configuration updated.")
     return redirect("/")
 
-
-@app.route("/update-news", methods=["POST"])
-def update_news():
-    if "NEWS_QUERY" in request.form:
-        update_config_variable("NEWS_QUERY", request.form["NEWS_QUERY"])
-    flash("News query updated.")
-    return redirect("/")
 
 
 @app.route("/run-command", methods=["POST"])
@@ -220,6 +216,16 @@ def add_brand():
     except Exception as e:
         flash(f"Error saving brands_out.json: {e}")
 
+    return redirect("/")
+
+
+@app.route("/update-news", methods=["POST"])
+def update_news():
+    for key in ["NEWS_QUERY", "BAIT_TOPIC", "SITE_NAME"]:
+        if key in request.form:
+            update_config_variable(key, request.form.get(key, ""))
+
+    flash("News settings updated (NEWS_QUERY, BAIT_TOPIC, SITE_NAME).")
     return redirect("/")
 
 
